@@ -1,0 +1,50 @@
+---
+format_version: '8'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: other
+workflows:
+  custom-ubuntu-workflow:
+    steps:
+      # Step 1: Use a custom Docker image (latest Ubuntu with all features)
+      - docker:
+          title: Use Custom Ubuntu Docker Image
+          inputs:
+            image: ubuntu:latest
+            options: "--privileged"  # Enable all features (like a real Ubuntu machine)
+            workdir: /bitrise/src
+
+      # Step 2: Install necessary tools (optional)
+      - script:
+          title: Install Basic Tools
+          inputs:
+            - content: |
+                #!/bin/bash
+                apt-get update
+                apt-get install -y curl git tmux vim
+
+      # Step 3: Deliberately fail this step
+      - script:
+          title: Deliberately Fail This Step
+          inputs:
+            - content: |
+                #!/bin/bash
+                echo "This step will deliberately fail..."
+                exit 1  # Force the step to fail
+
+      # Step 4: Sleep for 1 month (30 days) after the failure
+      - script:
+          title: Sleep for 1 Month
+          is_always_run: true  # Ensure this step runs even if the previous step fails
+          inputs:
+            - content: |
+                #!/bin/bash
+                echo "Sleeping for 30 days to keep the build running..."
+                sleep 2592000  # 30 days in seconds
+
+      # Step 5: Optional - Print a message after sleep (will never be reached)
+      - script:
+          title: Print Completion Message
+          inputs:
+            - content: |
+                #!/bin/bash
+                echo "Build completed!"
